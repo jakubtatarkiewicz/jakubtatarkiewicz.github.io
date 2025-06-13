@@ -1,1 +1,180 @@
-Strona główna.
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jakub Tatarkiewicz - Strona główna</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #FF4E50;
+      --secondary-color: #1C92D2;
+      --accent-color: #F9D423;
+      --bg-gradient: linear-gradient(60deg, #abecd6 0%, #fbed96 100%);
+      --card-bg: #ffffff;
+      --text-color: #2d3436;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text-color);
+      background: var(--bg-gradient);
+      background-size: 200% 200%;
+      animation: gradientShift 10s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background: rgba(255,255,255,0.85);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      backdrop-filter: blur(8px);
+      padding: 3rem;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.2s forwards;
+    }
+    @keyframes fadeInUp {
+      to { transform: translateY(0); opacity: 1; }
+    }
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 2rem;
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textReveal 1s ease-out 0.5s forwards;
+      opacity: 0;
+    }
+    @keyframes textReveal {
+      to { opacity: 1; }
+    }
+    section {
+      margin-top: 3rem;
+    }
+    h2 {
+      font-size: 1.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      position: relative;
+      display: inline-block;
+      color: var(--secondary-color);
+    }
+    h2::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -5px;
+      width: 50%;
+      height: 4px;
+      background: var(--accent-color);
+      animation: underlineGrow 0.7s ease-out forwards;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+    @keyframes underlineGrow {
+      to { transform: scaleX(1); }
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    .card:nth-child(1) { animation: fadeInUp 0.6s ease-out 0.7s forwards; }
+    .card:nth-child(2) { animation: fadeInUp 0.6s ease-out 0.9s forwards; }
+    .card:nth-child(3) { animation: fadeInUp 0.6s ease-out 1.1s forwards; }
+    .card:nth-child(4) { animation: fadeInUp 0.6s ease-out 1.3s forwards; }
+    .card:nth-child(5) { animation: fadeInUp 0.6s ease-out 1.5s forwards; }
+    .card:hover {
+      transform: translateY(-8px) rotate(-1deg);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    }
+    .card h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+      transition: color 0.3s ease;
+    }
+    .card:hover h3 {
+      color: var(--secondary-color);
+    }
+    .card a {
+      display: inline-block;
+      margin-top: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      padding: 0.5rem 1.25rem;
+      border: 2px solid var(--accent-color);
+      border-radius: 30px;
+      text-decoration: none;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .card a:hover {
+      background: var(--accent-color);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Jakub Tatarkiewicz</h1>
+    <section>
+      <h2>CV</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>CV (polski)</h3>
+          <a href="/Work/CV%20%E2%80%93%20Jakub%20Tatarkiewicz.pdf" target="_blank">Pobierz PDF</a>
+        </div>
+        <div class="card">
+          <h3>Resume (angielski)</h3>
+          <a href="/Work/Resume%20%E2%80%93%20Jakub%20Tatarkiewicz.pdf" target="_blank">Pobierz PDF</a>
+        </div>
+        <div class="card">
+          <h3>Profil GitHub</h3>
+          <a href="https://github.com/jakubtatarkiewicz" target="_blank">Odwiedź GitHub</a>
+        </div>
+      </div>
+    </section>
+    <section>
+      <h2>Analizy</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Analiza sygnałów rynkowych</h3>
+          <a href="/Analiza-sygnalow-rynkowych">Zobacz analizę</a>
+        </div>
+        <div class="card">
+          <h3>Porównanie metod iteracyjnych</h3>
+          <a href="/Porownanie-metod-iteracyjnych">Zobacz analizę</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

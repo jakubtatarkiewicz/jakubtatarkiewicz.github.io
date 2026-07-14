@@ -25,11 +25,15 @@ jobs:
 
       # Whitelist rozszerzeń: na serwer trafiają WYŁĄCZNIE pliki będące stroną.
       # Źródła (.qmd, .md, .R, .m, .csv, .py, .ipynb, .zip, .RData ...) zostają
-      # tylko w repo. Brak --delete: pliki spoza repo na VPS (np. eye-tracking)
-      # pozostają nietknięte.
-      - name: Deploy przez rsync (whitelist rozszerzeń)
+      # tylko w repo.
+      #
+      # --delete = MIRROR: pliki webowe usunięte z repo znikają też z VPS.
+      # UWAGA: cokolwiek dodanego do docroot ręcznie (spoza repo) zostanie
+      # skasowane przy kolejnym deployu. Excluded (niewebowe) są chronione
+      # (bez --delete-excluded), więc --delete kasuje tylko nadmiarowe pliki webowe.
+      - name: Deploy przez rsync (whitelist + mirror)
         run: |
-          rsync -rlvz --omit-dir-times --no-perms \
+          rsync -rlvz --omit-dir-times --no-perms --delete \
             --exclude '.git' --exclude '.git/**' \
             --exclude '.github' --exclude '.github/**' \
             --include '*/' \

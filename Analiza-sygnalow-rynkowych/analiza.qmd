@@ -1,0 +1,1397 @@
+---
+title: "Analiza sygnałów rynkowych"
+author: "Jakub Tatarkiewicz"
+editor: visual
+lang: pl
+format:
+  html:
+    toc: true
+    toc-location: left
+    math: true
+    toc-depth: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# Sygnały rynkowe
+
+Sygnały rynkowe w ujęciu rynków finansowych, to zdefiniowane w pewien określony sposób momenty w czasie, które dają informacje o stanie rynku lub pewnej jego części. Należy pamiętać, że jest to pojęcie potoczne i każdy może je definiować dla swoich potrzeb inaczej. Tym nie mniej na potrzeby ich analizy, właśnie w ten sposób zostają określone. Informacja pochodząca z sygnału, ma pomóc inwestorom w ocenie kierunku dążenia instumentów finansowych i co za tym idzie w zwiększeniu stopy zwrotu jego portfela. Dobór sygnałów jest kluczowy dla sukcesu gracza rynkowego. Kluczem jest znalezienie takich, które są stale efektywne w predykcji. Właśnie pod tym kątem będą analizowane sygnały tj. jaka jest ich efektywność na względnie dużym przedziale czasowym i w pewnym środowisku. Sukcesem będzie też dowiedzenie, że sygnał nie jest rentowny pomimo wcześniejszego przekonania o jego działaniu. Unikanie strat jest ważniejsze niż zdobywanie zysków.
+
+## Pytania badawce:
+
+Czy trwałe przejście różnicy rentowności obligacji skarbowych USA o terminach zapadalności 10 lat i 2 lata (10Y–2Y) z wartości ujemnych na dodatnie stanowi użyteczny sygnał predykcyjny dla przyszłego zachowania indeksu S&P 500?
+
+Jak rozkłada się efektywność strategii SMA na rynku pary BTCUSD w zależności od parametrów oraz rodzaju pozycji (long/short)?
+
+## Hipotezy
+
+Analiza koncentruje się na dwóch hipotezach badawczych, które pozwalają ocenić zarówno sygnały makroekonomiczne, jak i proste reguły techniczne.
+
+### Hipoteza H1: krzywa rentowności a rynek akcji
+
+**H1:** trwałe przejście różnicy rentowności obligacji skarbowych USA o terminach zapadalności 10 lat i 2 lata (10Y–2Y) z wartości ujemnych na dodatnie, interpretowane jako zakończenie inwersji krzywej rentowności, stanowi użyteczny sygnał ostrzegawczy dla rynku akcji reprezentowanego przez indeks S&P 500 w horyzoncie około dwóch lat.
+
+W praktyce hipoteza ta zakłada, że po wystąpieniu takiego sygnału częściej niż w okresach losowych powinny pojawiać się:
+
+-   istotne spadki indeksu,
+-   słabsze ścieżki cenowe,
+-   lub inne powtarzalne wzorce możliwe do odróżnienia od przypadku.
+
+### Hipoteza H2: średnie kroczące jako sygnał transakcyjny
+
+**H2:** strategia oparta na pojedynczej średniej kroczącej (SMA) oraz prostych progach wejścia i wyjścia jest w stanie generować dodatnią, stabilną stopę zwrotu (ROI) na danych BTCUSD w długim okresie, niezależnie od ogólnego trendu wzrostowego rynku kryptowalut.
+
+Istotne jest tu rozróżnienie pomiędzy rzeczywistą wartością informacyjną sygnału a pozorną skutecznością wynikającą wyłącznie z silnego trendu bazowego.
+
+### Sposób weryfikacji hipotez
+
+-   **H1** weryfikowana jest poprzez identyfikację momentów sygnałowych 10Y–2Y oraz analizę zachowania indeksu S&P 500 po ich wystąpieniu w postaci ujednoliconych ścieżek cenowych. Dodatkowo wyniki porównywane są z analogicznymi okresami losowymi.
+-   **H2** oceniana jest na podstawie obszernej bazy wyników obejmującej kilkadziesiąt tysięcy kombinacji parametrów strategii SMA. Analiza obejmuje zarówno najlepsze konfiguracje, jak i pełny rozkład wyników.
+
+### Ograniczenia analizy
+
+-   Badanie ma charakter analityczno-edukacyjny i nie stanowi rekomendacji inwestycyjnej.
+-   Dane historyczne nie gwarantują powtarzalności wyników w przyszłości.
+-   Wizualna atrakcyjność wykresów nie jest równoznaczna z realną przewagą statystyczną.
+-   W strategiach transakcyjnych pominięcie kosztów transakcyjnych może prowadzić do istotnego przeszacowania wyników.
+
+## Zbiór danych
+
+Niezbędny będzie zbiór danych zawierający historyczne stany rynków (akcji i obligacji). Nie zawsze cena będzie przedmiotem uwagi. Wszelkie potrzebne dane znajdują się na następujących stronach:
+
+-   [FRED - Federal Reserve Economic Data](https://fred.stlouisfed.org/)
+-   [Yahoo Finance](https://finance.yahoo.com/)
+
+## Pobieranie danych
+
+Z wyżej wymienionych stron pochodzą następujące dane:
+
+### FRED:
+
+Dane dzienne **rentowności obligacji 10-letnich oraz 2-letnich**.
+
+```{r}
+#| eval: false
+#| echo: false
+fetch_fred_data <- function(symbol, name = NULL) {
+  if (is.null(name)) {
+    name <- symbol
+  }
+  
+  url <- paste0("https://fred.stlouisfed.org/graph/fredgraph.csv?id=", 
+                symbol, 
+                "&cosd=1800-01-01&coed=2100-01-01")
+  
+  dir.create("data/fred", recursive = TRUE, showWarnings = FALSE)
+  filename <- file.path("data/fred", paste0(name, ".csv"))
+  
+  tryCatch({
+    download.file(url, filename, mode = "wb")
+  }, error = function(e) {
+    cat(paste("Failed to download", name, "(", symbol, "):", e$message, "\n"))
+  })
+}
+
+#fetch_fred_data('GDP') # Produkt krajowy brutto
+#fetch_fred_data('UNRATE') # Stopa bezrobocia
+#fetch_fred_data('FEDFUNDS') # Stopa procentowa
+#fetch_fred_data('CPIAUCSL', 'CPI') # Wskaźnik cen konsumenckich
+#fetch_fred_data('DGS10', '10BY') # Rentowność obliacji 10 letnich
+#fetch_fred_data('DGS2', '2BY') # Rentowność obligacji 2 letnich
+#fetch_fred_data('DGS3MO', '3MOBY') # Rentowność obligacji 3 miesięcznych
+```
+
+### Yahoo Finance
+
+Indeks **SP&500** czyli 500 największych spółek z giełd USA. Są to dane dziennych świeczek zawierających:
+
+-   Cene otwarcia
+-   Cenę zamknięcia
+-   Cenę minimialną
+-   Cenę maksymalną
+-   Wolumen transakcji
+
+```{r}
+#| eval: false
+#| echo: false
+suppressPackageStartupMessages(
+  library(quantmod)
+)
+
+fetch_yahoo_data <- function(symbol, 
+                             name = NULL, 
+                             from = "1900-01-01", 
+                             to = Sys.Date()) {
+  
+  if (is.null(name)) {
+    name <- symbol
+  }
+  
+  dir.create("data/yahoo", recursive = TRUE, showWarnings = FALSE)
+  filename <- file.path("data/yahoo", paste0(name, ".csv"))
+  
+  tryCatch({
+    suppressWarnings(
+      suppressMessages(
+        data <- getSymbols(
+          symbol,
+          src = "yahoo",
+          from = from,
+          to   = to,
+          auto.assign = FALSE
+        )
+      )
+    )
+    write.zoo(data, file = filename, sep = ",")
+  }, error = function(e) {
+    cat(paste("Failed to download", name, "(", symbol, "):", e$message, "\n"))
+  })
+}
+
+#fetch_yahoo_data("DX-Y.NYB", "DXY") # Indeks dolara
+#fetch_yahoo_data("GC=F", "GOLD") # Kontrakt na złoto
+#fetch_yahoo_data("CL=F", "OIL") # Kontrakt na rope
+#fetch_yahoo_data("^GSPC", "US500") # Indeks SP&500
+#fetch_yahoo_data("BTC-USD", "BTC") # Bitcoin
+```
+
+```{r}
+#| eval: false
+#| echo: false
+library(netstat)
+library(tidyverse)
+library(RSelenium)
+library(binman)
+library(dplyr)
+
+closeSignupDialog <- function(driver) {
+  tryCatch({
+    close_button <- driver$findElement(using = "css selector", value = "svg[data-test='sign-up-dialog-close-button']")
+    close_button$clickElement()
+  }, error = function(e){
+    message("Caught exception: ", e$message)
+  })
+}
+
+closeAcceptDialog <- function(driver) {
+  tryCatch({
+    button <- driver$findElement(using = "id", value = "onetrust-accept-btn-handler")
+    button$mouseMoveToLocation(x = 1, y = 2)
+    button$clickElement()
+  }, error = function(e){
+    message("Caught exception: ", e$message)
+  })
+}
+
+changeDate <- function(driver, date) {
+  closeSignupDialog(driver)
+  calendar_button <- driver$findElement(using = "css selector", value = "div.flex.flex-1.items-center.gap-3\\.5.rounded.border")
+      calendar_button$clickElement()
+  
+  Sys.sleep(0.5)
+  closeSignupDialog()
+  data_field <- driver$findElement(using = "css selector", ".absolute.left-0.top-0.h-full.w-full.opacity-0")
+  data_field$clickElement()
+  
+  Sys.sleep(0.5)
+  
+  closeSignupDialog()
+  driver$executeScript(
+    paste0(
+      "document.querySelector('input[type=\"date\"].absolute.left-0.top-0.h-full.w-full.opacity-0').value = '",
+      date,
+      "'"
+    )
+  )
+  data_field$clickElement()
+  Sys.sleep(0.5)
+  
+  data_field$sendKeysToActiveElement(list("\uE012")) # Left arrow
+  data_field$sendKeysToActiveElement(list("\uE014")) # Right arrow
+  Sys.sleep(0.5)
+  
+  button <- driver$findElement(
+      using = "css selector", 
+      "div.flex.cursor-pointer.items-center.gap-3.rounded.bg-v2-blue"
+  )
+  button$clickElement()
+}
+
+convertVolume0 <- function(volume) {
+  if (grepl("K", volume)) {
+    as.numeric(sub("K", "", volume)) * 1e3
+  } else if (grepl("M", volume)) {
+    as.numeric(sub("M", "", volume)) * 1e6
+  } else {
+    as.numeric(volume)
+  }
+}
+
+convertVolume <- function(volume) {
+  as.integer(convertVolume0(volume))
+}
+
+latestDataRow <- function(driver) {
+  row <- driver$findElement(using = "css selector", "tr.historical-data-v2_price__atUfP")
+  
+  return(as.Date(
+      trimws(row$findChildElements(using = "css selector", "td")[[1]]$getElementText()[[1]]),
+      format = "%b %d, %Y"))
+}
+
+toNumeric <- function(text) {
+  return(as.numeric(gsub(",", "", text)))
+}
+
+initialDataFrame <- function(symbol) {
+  file_path <- paste0("data/investing/", symbol, "_BASE.csv")
+  if (file.exists(file_path)) {
+    return(read.csv(file_path, stringsAsFactors = FALSE, colClasses = c(date = "Date")))
+  } else {
+    return(data.frame(
+      date = as.Date(character()),
+      close = numeric(),
+      open = numeric(),
+      high = numeric(),
+      low = numeric(),
+      volume = numeric()
+    ))
+  }
+}
+
+readDataFromPage <- function(driver, data) {
+  Sys.setlocale("LC_TIME", "C")
+  rows <- driver$findElements(using = "css selector", "tr.historical-data-v2_price__atUfP")
+  
+  data_list <- list()
+  
+  for (i in seq_along(rows)) {
+    tryCatch({
+      td <- rows[[i]]$findChildElements(using = "css selector", "td")
+
+      date <- as.Date(trimws(td[[1]]$getElementText()[[1]]), format = "%b %d, %Y")
+      close <- toNumeric(td[[2]]$getElementText()[[1]])
+      open <- toNumeric(td[[3]]$getElementText()[[1]])
+      high <- toNumeric(td[[4]]$getElementText()[[1]])
+      low <- toNumeric(td[[5]]$getElementText()[[1]])
+      volume <- convertVolume(td[[6]]$getElementText()[[1]])
+      
+      # Append cleaned data to the list
+      data_list[[i]] <- list(
+        date = date,
+        close = close,
+        open = open,
+        high = high,
+        low = low,
+        volume = volume
+      )
+    }, error = function(e) {
+      message("Error processing row ", i, ": ", e$message)
+    })
+  }
+  
+
+  extracted_data <- do.call(rbind, lapply(data_list, as.data.frame))
+  
+  if (nrow(extracted_data) > 0) {
+    extracted_data <- extracted_data[nrow(extracted_data):1, ]
+  }
+  combined_data <- dplyr::bind_rows(data, extracted_data) %>%
+    dplyr::distinct(date, .keep_all = TRUE)
+  
+  print(paste0("Combined data max date ", max(combined_data$date)))
+  
+  return(combined_data)
+}
+
+readAndSaveData <- function(driver, symbol, link) {
+  df <- initialDataFrame(symbol)
+
+  df_latest_date <- if (nrow(df) == 0) {
+    df_latest_date <- as.Date("1900-01-01")
+  } else {
+    df_latest_date <- max(df$date, na.rm = TRUE)
+  }
+  
+  driver$navigate(link)
+  
+  Sys.sleep(2)
+  closeAcceptDialog(driver)
+  Sys.sleep(0.5)
+  closeSignupDialog(driver)
+  
+  latest_date <- latestDataRow(driver)
+  if(is.na(latest_date)) { print("latest_date is na") } else print(paste("latest date: ", latest_date))
+  print(paste("df latest date: ", df_latest_date))
+
+  repeat {
+    Sys.sleep(3)
+    changeDate(driver, df_latest_date)
+    Sys.sleep(10)
+    df <- readDataFromPage(driver, df)
+    df_latest_date <- max(df$date)
+    print(latest_date)
+    print(df_latest_date)
+    if(!is.na(df_latest_date) && !is.na(latest_date) && df_latest_date == latest_date) {
+      break;
+    }
+  }
+
+  write.csv(df, paste0("data/investing/", symbol, ".csv"), row.names = FALSE)
+}
+
+rs_driver_obj <- rsDriver(
+  browser = 'chrome',
+  chromever = '131.0.6778.85',
+  port = 4444L,
+  version = "2.53.1",
+  phantomver = NULL,
+  extraCapabilities = list(
+    chromeOptions = list(
+      args = list("--log-level=DEBUG")#, "--headless", "--disable-gpu", "--no-sandbox")
+    )
+  )
+)
+
+#driver <- rs_driver_obj$client
+
+#readAndSaveData(driver, "OIL", "https://www.investing.com/commodities/crude-oil-historical-data")
+#readAndSaveData(driver, "GOLD", "https://www.investing.com/commodities/gold-historical-data")
+
+#rs_driver_obj$server$stop()
+```
+
+### Ograniczenia i przygotowanie danych
+
+W przeprowadzonej analizie wykorzystano wyłącznie dni robocze (giełdowe), co oznacza, że brak notowań w kalendarzu nie jest traktowany jako brak danych, lecz jako dni wolne od obrotu giełdowego. W związku z tym nie wystąpił problem brakujących obserwacji wymagających imputacji lub uzupełniania. Odnośnie wartości odstających, fluktuacje cenowe prowadzące do ekstremalnych wartości cen maksymalnych i minimalnych (High i Low) zostały celowo zachowane, ponieważ stanowią naturalny element dynamiki rynku finansowego i mogą nieść istotną informację dla analizy trendu oraz regresji. W większości przypadków analiza opiera się jednak na cenie zamknięcia (Close), która jest standardowo uznawana za najbardziej reprezentatywną dla danej sesji giełdowej. Nie zastosowano formalnych procedur identyfikacji ani korekty wartości odstających, gdyż ich usuwanie mogłoby prowadzić do zniekształcenia rzeczywistego obrazu zmienności rynku.
+
+## Analiza sygnałów
+
+### 10-2Y
+
+#### Definicja i wystąpienia
+
+Sygnał nazywany 10Y-2Y jest definiowany jako momenty trwałego przejścia wartości różnicy rentowności obligacji 10 letnich i 2 letnich z wartości ujemnych na dodatnie. Analogicznym sygnałem jest 10Y-3M z 3 miesięcznymi obligacjami.
+
+```{r}
+#| echo: false
+library(tidyverse)
+
+
+d10 <- read_csv(
+  "data/fred/DGS10.csv", 
+  col_types = cols(
+    DATE  = col_date(format = "%Y-%m-%d"), 
+    DGS10 = col_double()
+  )
+)
+
+d2 <- read_csv(
+  "data/fred/DGS2.csv", 
+  col_types = cols(
+    DATE = col_date(format = "%Y-%m-%d"), 
+    DGS2 = col_double()
+  )
+)
+
+
+df <- full_join(d10, d2, by = "DATE") %>%
+  arrange(DATE) %>%
+  filter(!is.na(DGS10), !is.na(DGS2)) %>%
+  mutate(
+    yield_curve = DGS10 - DGS2,
+    sign = yield_curve > 0
+  )
+
+df <- df %>%
+  mutate(
+    crossing_neg2pos = sign == TRUE & lag(sign) == FALSE,
+    crossing_neg2pos = replace_na(crossing_neg2pos, FALSE)
+  )
+
+df <- df %>%
+  mutate(idx = row_number())
+
+get_mean_next_90 <- function(i) {
+  end_i <- i + 89
+  if (end_i > nrow(df)) {
+    return(NA_real_)
+  } else {
+    return(mean(df$yield_curve[i:end_i], na.rm = TRUE))
+  }
+}
+
+df <- df %>%
+  rowwise() %>%
+  mutate(
+    mean_90 = if_else(
+      crossing_neg2pos,
+      get_mean_next_90(idx),
+      NA_real_
+    )
+  ) %>%
+  ungroup() %>%
+  mutate(
+    is_permanent = crossing_neg2pos & mean_90 > 0
+  )
+
+
+permanent_signals <- df %>%
+  filter(is_permanent) %>%
+  select(idx, DATE)
+
+final_signal_idx <- c()
+last_signal_date <- as.Date("1900-01-01")
+
+for (i in seq_len(nrow(permanent_signals))) {
+  this_date <- permanent_signals$DATE[i]
+  
+  if (this_date - last_signal_date >= 365) {
+    final_signal_idx <- c(final_signal_idx, permanent_signals$idx[i])
+    last_signal_date <- this_date
+  }
+}
+
+df <- df %>%
+  mutate(is_signal = idx %in% final_signal_idx)
+
+
+ggplot(df, aes(x = DATE, y = yield_curve)) +
+  geom_line(color = "steelblue") +
+  geom_hline(yintercept = 0, color = "red") +
+  
+  geom_vline(
+    data = filter(df, is_signal),
+    aes(xintercept = DATE),
+    color = "blue", 
+    linetype = "dashed", 
+    size = 0.8
+  ) +
+  
+  labs(
+    title = "Przejścia krzywej rentowności (10Y - 2Y)",
+    subtitle = "Pierwsze przejście z ujemnych na dodatnie od 365 dni i kolejne 120 dni z dodatnią średnią",
+    x = "Data",
+    y = "Różnica rentowności (10Y - 2Y)"
+  ) +
+  theme_minimal()
+
+
+```
+
+Jego praktyczna definicja i wyznaczenie pokazane są na wykresie.
+
+#### Przekształcenie indeksu w oscylator
+
+```{r}
+#| echo: false
+library(tidyverse)
+sp500 <- read_csv(
+  "data/yahoo/US500.csv",
+  col_types = cols(
+    Index         = col_date(format = "%Y-%m-%d"),
+    GSPC.Open     = col_double(),
+    GSPC.High     = col_double(),
+    GSPC.Low      = col_double(),
+    GSPC.Close    = col_double(),
+    GSPC.Volume   = col_double(),
+    GSPC.Adjusted = col_double()
+  )
+) %>%
+  rename(DATE = Index) %>%
+  arrange(DATE)
+
+df_both <- left_join(sp500, df, by = "DATE") %>%
+  filter(!is.na(GSPC.Close), !is.na(yield_curve))
+
+min_max_scale <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+df_both <- df_both %>%
+  mutate(
+    log_sp500 = log(GSPC.Close)
+  )
+
+model_lm <- lm(log_sp500 ~ as.numeric(DATE), data = df_both)
+
+df_both <- df_both %>%
+  mutate(
+    log_sp500_pred = predict(model_lm, newdata = df_both)
+  )
+
+df_both <- df_both %>%
+  mutate(
+    ratio_sp500       = log_sp500 / log_sp500_pred,
+    scaled_ratio_sp500 = min_max_scale(ratio_sp500)
+  )
+
+df_both <- df_both %>%
+  mutate(
+    scaled_yield = min_max_scale(yield_curve)
+  )
+
+rng <- range(df_both$yield_curve, na.rm = TRUE)
+min_val <- rng[1]
+max_val <- rng[2]
+
+scaled_zero <- (0 - min_val) / (max_val - min_val)
+```
+
+Aby porównać zachowanie indeksu giełdowego z innymi sygnałami (np. krzywą rentowności), konieczne jest sprowadzenie go do postaci oscylacyjnej (wokół wartości 1). Indeks S&P 500 rośnie w długim horyzoncie w sposób zbliżony do wykładniczego, co utrudnia bezpośrednią analizę jego wahań.
+
+Proces przekształcenia przebiega w trzech krokach:
+
+1.  **Poziom indeksu S&P 500** – pokazuje nominalny wzrost wartości rynku w czasie.
+2.  **Logarytm indeksu S&P 500** – redukuje wykładniczy charakter wzrostu i stabilizuje wariancję.
+3.  **Logarytm indeksu z regresją liniową** – wyznacza długoterminowy trend, wokół którego indeks oscyluje.
+
+Budowana regresja liniowa, ma cenę zamknięcia S&P 500 jako zmienną objaśnianą i datę jako zmienną objaśniającą.
+
+### 1. Wykres poziomu indeksu S&P 500
+
+```{r}
+#| echo: false
+library(ggplot2)
+
+ggplot(sp500, aes(x = DATE, y = GSPC.Close)) +
+  geom_line(color = "steelblue") +
+  labs(
+    title = "Indeks S&P 500 – poziom cen",
+    x = "Data",
+    y = "Wartość indeksu"
+  ) +
+  theme_minimal()
+```
+
+Na wykresie widać silny, długoterminowy trend wzrostowy, który utrudnia ocenę relatywnych odchyleń indeksu w różnych okresach.
+
+------------------------------------------------------------------------
+
+### 2. Wykres logarytmu indeksu S&P 500
+
+```{r}
+#| echo: false
+sp500 <- sp500 %>%
+  mutate(log_sp500 = log(GSPC.Close))
+
+ggplot(sp500, aes(x = DATE, y = log_sp500)) +
+  geom_line(color = "darkgreen") +
+  labs(
+    title = "Logarytm indeksu S&P 500",
+    x = "Data",
+    y = "ln(S&P 500)"
+  ) +
+  theme_minimal()
+```
+
+Logarytmowanie indeksu powoduje „wypłaszczenie” wzrostu – tempo zmian w różnych dekadach staje się bardziej porównywalne, a wykres przypomina oscylację wokół rosnącej prostej.
+
+------------------------------------------------------------------------
+
+### 3. Logarytm indeksu z zaznaczoną regresją liniową
+
+```{r}
+#| echo: false
+model_lm <- lm(log_sp500 ~ as.numeric(DATE), data = sp500)
+
+sp500 <- sp500 %>%
+  mutate(log_sp500_pred = predict(model_lm, newdata = sp500))
+
+ggplot(sp500, aes(x = DATE)) +
+  geom_line(aes(y = log_sp500), color = "black") +
+  geom_line(aes(y = log_sp500_pred), color = "red", linetype = "dashed") +
+  labs(
+    title = "Logarytm S&P 500 z długoterminowym trendem (regresja liniowa)",
+    subtitle = "Linia przerywana – trend długoterminowy",
+    x = "Data",
+    y = "ln(S&P 500)"
+  ) +
+  theme_minimal()
+```
+
+Regresja liniowa wyznacza **trend długoterminowy** logarytmu indeksu. Odchylenia od tej prostej można interpretować jako fazy przewartościowania lub niedowartościowania rynku.
+
+------------------------------------------------------------------------
+
+### Interpretacja i przejście do oscylatora
+
+Dzieląc logarytm indeksu przez wartość predykcji regresji liniowej:
+
+$$
+\frac{\log(\text{Wartość SP\&500})}{\text{Wartość predykcji regresji liniowej } \log(\text{Wartość SP\&500})}
+$$
+
+otrzymujemy wielkość oscylującą wokół 1. Po dalszym przeskalowaniu (np. metodą Min–Max) możliwe jest bezpośrednie porównywanie tego oscylatora z innymi sygnałami rynkowymi, takimi jak krzywa rentowności 10Y–2Y, co zostanie wykorzystane w kolejnych analizach.
+
+```{r}
+#| echo: false
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+ggplot(df_both, aes(x = DATE)) +
+  geom_line(aes(y = scaled_ratio_sp500, color = "Scaled: ln(S&P500) / ln(S&P500)_pred"),
+            size = 1) +
+  
+  geom_line(aes(y = scaled_yield, color = "10Y-2Y (scaled)"), size = 1) +
+  geom_hline(yintercept = scaled_zero, color = "blue", linetype="dotted") +
+  geom_vline(
+    data = filter(df, is_signal),
+    aes(xintercept = DATE),
+    color = "blue", 
+    linetype = "dashed", 
+    size = 0.8
+  ) +
+  labs(
+    title = "Zależność krzywej rentowności do indeksu 500 największych spółek USA",
+    x = "Data",
+    y = "Wartość w skali (0, 1)"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(
+    name = "",
+    values = c("Scaled: ln(S&P500) / ln(S&P500)_pred" = "red",
+               "10Y-2Y (scaled)" = "steelblue")
+  ) +
+  annotate("text",
+           x = as.Date("2015-01-01"),
+           y = scaled_zero,
+           label = "10Y-2Y = 0",
+           color = "blue",
+           vjust = -1) +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+```
+
+Wizualizacja pokazuje, że nie które sygnały nie zostały odfiltrowane tak jak założono. Z definicji wynika, że przejście z wartości ujemnych na wartości dodatnie ma być względnie stałe. Na wykresie widać przypadki gdzie zaznaczone przerywanymi liniami pionowymi sygnały, są blisko siebie. Nie będziemy jednak zawężać definicji tego sygnału, aby nie "nie robić analizy pod wynik". Dokładnie przyglądając się, można ulec wrażeniu, że po sygnale, cena spada, ale przekształcimy ten wykres, aby pokazywał równolegle jak indeks zachowuje się po sygnale w skali ceny z momentu wystąpienia sygnału.
+
+#### Postać ścieżkowa
+
+Dla lepszego wglądu na to co dzieje się z analizowanym indeksem giełdowym po wystąpieniu sygnału, tworzony jest wykres ścieżek (Jedna ścieżka na każdy sygnał) gdzie punktem odniesienia jest cena zamknięcia S&P 500 z dnia sygnału, a dalej jest relatywna, wyrażana przez iloraz ceny zamknięcia z danego dnia i ceny z 1. dnia wykresu. Wykres przedstawia 500 dni roboczych, co pozwala na taką samą długość osi X dla każdej ścieżki, zachowując względnie równy przedział czasowy, trwający około 2 lata.
+```{r}
+#| echo: false
+library(purrr)
+
+df_signals <- df_both %>%
+  filter(is_signal) %>%
+  select(DATE, GSPC.Close)
+
+size <- 500
+
+df_paths <- map_dfr(1:nrow(df_signals), function(i) {
+  
+  signal_day   <- df_signals$DATE[i]
+  price_signal <- df_signals$GSPC.Close[i]
+  
+  start_row <- which(df_both$DATE == signal_day)
+  end_row <- min(start_row + size - 1, nrow(df_both))
+  
+  df_sub <- df_both %>%
+    slice(start_row:end_row)
+  
+  df_sub <- df_sub %>%
+    mutate(
+      rel_close          = GSPC.Close / price_signal,
+      candles_from_signal = row_number() - 1,
+      signal_date        = signal_day
+    )
+  
+  df_sub
+})
+
+ggplot(df_paths, aes(
+  x = candles_from_signal, 
+  y = rel_close, 
+  group = signal_date,
+  color = factor(signal_date)
+)) +
+  geom_line(alpha = 0.7) +
+  labs(
+    title = "S&P 500 – względna zmiana w 2 latach po sygnale 10Y-2Y",
+    subtitle = "Poszczególne sygnały, każda ścieżka startuje z 1",
+    x = "Świeczki od sygnału",
+    y = "Relatywna cena (1 = cena w dniu sygnału)"
+  ) +
+  theme_minimal()
+
+
+df_avg <- df_paths %>%
+  group_by(candles_from_signal) %>%
+  summarize(mean_rel_close = mean(rel_close, na.rm = TRUE)) %>%
+  ungroup()
+
+ggplot() +
+  geom_line(
+    data = df_paths,
+    aes(x = candles_from_signal, y = rel_close, group = signal_date),
+    color = "black",
+    alpha = 0.3
+  ) +
+  geom_line(
+    data = df_avg,
+    aes(x = candles_from_signal, y = mean_rel_close),
+    color = "red",
+    size = 1
+  ) +
+  labs(
+    title = "S&P 500 – względna zmiana w 2 latach po sygnale 10Y-2Y",
+    subtitle = "Cienkie linie: poszczególne sygnały, gruba linia: średnia ścieżka",
+    x = "Świeczki od sygnału",
+    y = "Relatywna cena (1 = cena w dniu sygnału)"
+  ) +
+  theme_minimal()
+
+```
+
+Nie widać tu żadnych, szczególnych powtarzalności. Niektóre wykresy idą w góre, a inne w dół. Można zauważyć, że przez dwa lata, czyli około 500 dni roboczch na giełdzie, w pewnym momencie zachodzi istotny spadek ceny względem ceny z dnia sygnału. Tutaj spadki o co najmniej 20% ($iloraz <= 0.8$).
+
+```{r}
+#| echo: false
+df_paths_crossed <- df_paths %>%
+  group_by(signal_date) %>%
+  filter(signal_date == '1998-05-27') %>%
+  ungroup()
+
+df_paths_crossed <- df_paths %>%
+  group_by(signal_date) %>%
+  filter(any(rel_close < 0.80)) %>%
+  ungroup()
+
+ggplot(df_paths_crossed, aes(
+  x = candles_from_signal, 
+  y = rel_close, 
+  group = signal_date,
+  color = factor(signal_date)
+)) +
+  geom_line(alpha = 0.7) +
+  geom_hline(yintercept = 0.8, color = "red", linetype = "dashed", linewidth = 1) +
+  labs(
+    title = "S&P 500 – tylko ścieżki przecinające 0.8",
+    subtitle = "Każda linia startuje z 1, a w pewnym momencie spada < 0.8",
+    x = "Świeczki od sygnału",
+    y = "Relatywna cena (1 = cena w dniu sygnału)"
+  ) +
+  theme_minimal()
+```
+
+#### Podsumowanie ścieżek i klasteryzacja
+
+W celu oceny, czy ścieżki cenowe występujące po rzeczywistych sygnałach 10Y–2Y różnią się w sposób systematyczny od ścieżek losowych, zastosowano metody **uczenia nienadzorowanego**, w szczególności algorytm *k-means* oraz analizę głównych składowych (*Principal Component Analysis*, PCA).
+
+##### Cel klasteryzacji
+
+Celem klasteryzacji było grupowanie obserwacji (zarówno sygnałów rzeczywistych, jak i losowych) w oparciu o **wielowymiarowe cechy opisujące zachowanie indeksu po sygnale**, takie jak:
+
+-   minimalna i maksymalna względna cena,
+-   średnia względna cena,
+-   zmienność dziennych stóp zwrotu,
+-   największy obserwowany spadek i wzrost w badanym horyzoncie.
+
+Jeżeli sygnał 10Y–2Y posiadałby istotną wartość predykcyjną, należałoby oczekiwać, że ścieżki po nim występujące tworzyłyby **odrębne klastry** w przestrzeni tych cech, wyraźnie różniące się od ścieżek losowych.
+
+------------------------------------------------------------------------
+
+##### Algorytm k-means
+
+Algorytm *k-means* jest jedną z najprostszych i najczęściej stosowanych metod klasteryzacji. Polega on na podziale zbioru danych na ( k ) klastrów w taki sposób, aby **zminimalizować sumę kwadratów odległości punktów od centroidów klastrów**.
+
+W analizie przyjęto:
+
+-   k = 3
+-   dane wejściowe zostały **znormalizowane**, aby każda zmienna miała porównywalny wpływ na wynik klasteryzacji.
+
+Klasteryzacja została przeprowadzona na zbiorze łączącym ścieżki po sygnałach rzeczywistych i losowych, bez informowania algorytmu, do której grupy dana obserwacja należy.
+
+------------------------------------------------------------------------
+
+##### Analiza głównych składowych (PCA)
+
+Ponieważ klasteryzacja odbywa się w przestrzeni wielowymiarowej, do celów wizualizacji zastosowano **analizę głównych składowych (PCA)**.
+
+PCA jest metodą redukcji wymiarowości, która polega na znalezieniu nowych, ortogonalnych osi (składowych głównych), maksymalizujących wariancję danych. Pierwsze dwie składowe:
+
+-   **PC1** – kierunek największej zmienności danych,
+-   **PC2** – kierunek drugiej największej zmienności, prostopadły do PC1,
+
+umożliwiają rzutowanie danych do przestrzeni dwuwymiarowej przy zachowaniu jak największej części informacji.
+
+W kontekście tej analizy PCA **nie służy do budowy modelu**, lecz wyłącznie do:
+
+-   wizualnej oceny struktury klastrów,
+-   sprawdzenia, czy sygnały rzeczywiste i losowe zajmują różne obszary przestrzeni cech.
+
+Przekształcając dane w podsumowania:
+
+```{r}
+#| echo: false
+
+calc_increases_decreases <- function(x) {
+  lowest_so_far <- x[1]
+  highest_increase <- 0
+  for (val in x) {
+    if (val < lowest_so_far) {
+      lowest_so_far <- val
+    }
+    current_increase <- val - lowest_so_far
+    if (current_increase > highest_increase) {
+      highest_increase <- current_increase
+    }
+  }
+  
+  highest_so_far <- x[1]
+  highest_decrease <- 0
+  for (val in x) {
+    if (val > highest_so_far) {
+      highest_so_far <- val
+    }
+    current_decrease <- highest_so_far - val
+    if (current_decrease > highest_decrease) {
+      highest_decrease <- current_decrease
+    }
+  }
+  
+  list(
+    highest_increase = highest_increase,
+    highest_decrease = highest_decrease
+  )
+}
+
+df_paths <- df_paths %>%
+  group_by(signal_date) %>%
+  arrange(candles_from_signal) %>%
+  mutate(daily_ret = rel_close / lag(rel_close) - 1) %>%
+  ungroup()
+
+df_summary <- df_paths %>%
+  group_by(signal_date) %>%
+  summarize(
+    min_rel_close  = min(rel_close, na.rm = TRUE),
+    max_rel_close  = max(rel_close, na.rm = TRUE),
+    mean_rel_close = mean(rel_close, na.rm = TRUE),
+    sd_daily_ret   = sd(daily_ret, na.rm = TRUE),
+    
+    stats = list(calc_increases_decreases(rel_close))
+  ) %>%
+  ungroup() %>%
+  rowwise() %>%
+  mutate(
+    highest_increase = stats$highest_increase,
+    highest_decrease = stats$highest_decrease
+  ) %>%
+  ungroup() %>%
+  select(-stats)
+
+df_summary_long <- df_summary %>%
+  pivot_longer(
+    cols = -signal_date,
+    names_to = "metric",
+    values_to = "value"
+  ) %>%
+  mutate(
+    label_value = sprintf("%.2f%%", value * 100)
+  )
+
+
+library(reactable)
+library(reactablefmtr)
+
+reactable(
+  df_summary,
+  # Domyślnie wyświetlaj do 3 miejsc po przecinku
+  defaultColDef = colDef(
+    format = colFormat(digits = 3)
+  ),
+  columns = list(
+    signal_date = colDef(
+      name = "Data sygnału"
+    ),
+    min_rel_close = colDef(
+      name = "Minimum (rel. Close)"
+    ),
+    max_rel_close = colDef(
+      name = "Maksimum (rel. Close)"
+    ),
+    mean_rel_close = colDef(
+      name = "Średnia (rel. Close)"
+    ),
+    sd_daily_ret = colDef(
+      name = "Odchylenie std (dzienne)",
+      format = colFormat(digits = 5)  # 5 miejsc po przecinku
+    ),
+    highest_increase = colDef(
+      name = "Największy wzrost",
+      cell = data_bars(
+        df_summary, 
+        fill_color = "lightgreen", 
+        text_position = "outside-end"
+      )
+    ),
+    highest_decrease = colDef(
+      name = "Największy spadek",
+      cell = data_bars(
+        df_summary, 
+        fill_color = "lightcoral",
+        text_position = "outside-end"
+      )
+    )
+  ),
+  bordered = TRUE,
+  striped = TRUE,
+  highlight = TRUE,
+  showPageSizeOptions = TRUE,
+  pageSizeOptions = c(5, 10, 15)
+)
+
+
+
+```
+gdzie:
+- Największy wzrost to największy możliwy wzrost pomiędzy spadkiem i następującym po nim wzrostem
+- Największy spadek to największy możliwy spadek pomiędzy wzrostem i następującym po nim spadkie.
+
+otrzymamy postać możliwą do sklastrowania, co zostanie wykonane, ale przed tym zostaną dodane sygnały losowe tj. losowo wybrane przedziały pięćset świeczkowe rozdzielne z przedziałami ścieżek sygnałów prawdziwych.
+
+```{r}
+#| echo: false
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(factoextra) 
+
+n_total <- nrow(df_both)
+max_start <- n_total - 499
+possible_starts <- 1:max_start
+
+real_signal_rows <- match(df_signals$DATE, df_both$DATE)
+
+bad_indices <- c()
+for (s in real_signal_rows) {
+  lower <- max(1, s - 499)
+  upper <- min(max_start, s + 499)
+  bad_indices <- c(bad_indices, lower:upper)
+}
+bad_indices <- unique(bad_indices)
+
+possible_starts_clean <- setdiff(possible_starts, bad_indices)
+
+set.seed(2025)
+random_starts <- sample(possible_starts_clean, size = 50, replace = FALSE)
+
+df_random_signals <- data.frame(
+  random_signal_date = df_both$DATE[random_starts],
+  start_row = random_starts
+)
+
+df_paths_random <- map_dfr(1:nrow(df_random_signals), function(i) {
+  
+  start_row <- df_random_signals$start_row[i]
+  end_row   <- start_row + 499
+  
+  df_sub <- df_both %>%
+    slice(start_row:end_row)
+  
+  price_signal <- df_sub$GSPC.Close[1]
+  
+  df_sub <- df_sub %>%
+    mutate(
+      random_signal_date = df_random_signals$random_signal_date[i],
+      candles_from_signal = row_number() - 1,  # 0..499
+      rel_close = GSPC.Close / price_signal
+    )
+  
+  df_sub
+})
+
+df_paths_random <- df_paths_random %>%
+  group_by(random_signal_date) %>%
+  arrange(candles_from_signal) %>%
+  mutate(
+    daily_ret = rel_close / lag(rel_close) - 1
+  ) %>%
+  ungroup()
+
+df_summary_random <- df_paths_random %>%
+  group_by(random_signal_date) %>%
+  summarize(
+    min_rel_close  = min(rel_close, na.rm = TRUE),
+    max_rel_close  = max(rel_close, na.rm = TRUE),
+    mean_rel_close = mean(rel_close, na.rm = TRUE),
+    sd_daily_ret   = sd(daily_ret, na.rm = TRUE),
+    stats = list(calc_increases_decreases(rel_close))
+  ) %>%
+  ungroup() %>%
+  rowwise() %>%
+  mutate(
+    highest_increase = stats$highest_increase,
+    highest_decrease = stats$highest_decrease
+  ) %>%
+  ungroup() %>%
+  select(-stats) %>%
+  mutate(is_signal = FALSE)
+
+df_summary_real <- df_summary %>%
+  rename(signal_date = signal_date) %>%
+  mutate(is_signal = TRUE)
+
+# Łączymy
+df_summary_combined <- df_summary_real %>%
+  select(signal_date, min_rel_close, max_rel_close, mean_rel_close,
+         sd_daily_ret, highest_increase, highest_decrease, is_signal) %>%
+  bind_rows(
+    df_summary_random %>%
+      rename(signal_date = random_signal_date) %>%
+      select(signal_date, min_rel_close, max_rel_close, mean_rel_close,
+             sd_daily_ret, highest_increase, highest_decrease, is_signal)
+  )
+
+df_cluster_data <- df_summary_combined %>%
+  select(min_rel_close, max_rel_close, mean_rel_close,
+         sd_daily_ret, highest_increase, highest_decrease)
+
+df_cluster_scaled <- scale(df_cluster_data)
+
+set.seed(123)
+k <- 3
+kmeans_res <- kmeans(df_cluster_scaled, centers = k, nstart = 100)
+
+df_summary_combined$cluster <- factor(kmeans_res$cluster)
+
+fviz_cluster(
+  object = kmeans_res,
+  data = df_cluster_scaled,
+  geom = "point",
+  ellipse.type = "convex",
+  palette = "jco",
+  main = "K-means (k=3) na metrykach ścieżek"
+)
+
+pca_res <- prcomp(df_cluster_scaled, scale. = FALSE)
+pca_df <- as.data.frame(pca_res$x[, 1:2])
+pca_df$cluster <- df_summary_combined$cluster
+pca_df$is_signal <- df_summary_combined$is_signal
+
+pca_df <- pca_df %>%
+  mutate(is_signal = ifelse(is_signal, "REALNY", "LOSOWY"))
+
+ggplot(pca_df, aes(
+  x = PC1, y = PC2,
+  color = cluster,
+  shape = is_signal
+)) +
+  geom_point(size = 3) +
+  labs(
+    title = "Wizualizacja PCA – klasteryzacja sygnały realne/losowe",
+    color = "Klaster",
+    shape = "Rodzaj sygnału"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "top",
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.text = element_text(size = 10)
+  )
+```
+
+##### Interpretacja wyników
+
+Wyniki klasteryzacji pokazują, że sygnały rzeczywiste i losowe są **równomiernie rozłożone pomiędzy klastrami**. Na wykresie PCA nie obserwuje się wyraźnych obszarów zajmowanych wyłącznie przez sygnały 10Y–2Y ani jednoznacznego oddzielenia ich od sygnałów losowych.
+
+Oznacza to, że w przyjętej definicji sygnału oraz w analizowanym horyzoncie czasowym, **zachowanie indeksu S&P 500 po sygnałach 10Y–2Y nie różni się statystycznie w sposób oczywisty od zachowania losowych fragmentów rynku**.
+
+#### Podsumowanie
+
+Odpowiadając na pytanie badawcze: Nie, trwałe przejście różnicy rentowności obligacji skarbowych USA o terminach zapadalności 10 lat i 2 lata (10Y–2Y) z wartości ujemnych na dodatnie nie stanowi użytecznego sygnału predykcyjnego dla przyszłego zachowania indeksu S&P 500. Odrzucamy pierwszą hipoteze. 10Y-2Y zdefiniowane wyżej nie daje pożądanych rezultatów. Na wizualizacjach widać spadki po jego wystąpieniu, ale nigdy nie wiadomo kiedy i o ile, co czyni go nieefektywnym. Prawdopodobnym jest, że sygnał powinien zostać zdefiniowany, nie tylko warunkami historycznymi, ale też przyszłymi, czyli wychodzącymi z pozycji w przypadku nie porządanych ruchów rynku np. odwróceniu, a sygnał powinien posiadać swoje metadane takie jak długość odwrócenia krzywej rentowności, pole wykresu pod 10Y-2Y=0 czy wysokość trendu wzrostowego (np. przez SMA).
+
+### Rodzina sygnałów SMA (Simple Moving Average)
+
+#### Definicja
+
+SMA-i w czasie $t$, to średnia arytmetyczna z $i$ ostatnich cen.
+
+$$
+SMA_i(t) = \frac{cena_t + cena_{t-1} + \dots + cena_{t-i+1}}{i} = \frac{1}{i} \sum_{k=t-i+1}^{t} a_k
+$$
+
+#### Algorytm gry na rynku
+
+Stwórzmy algorytm grający parą BTCUSD.
+
+Mamy pięć paramterów:
+
+-   **entry_short** - cena wejścia w pozycję short
+-   **entry_long** - cena wejścia w pozycję long
+-   **exit_short_threshold** - cena wyjścia z pozycji short
+-   **exit_long_threshold** - cena wyjścia z pozycji long
+-   **position_timeout** - czas po którym pozycja się zamyka
+
+Wartości cenowe nie są wyrażanie w walutach, a w relacji do SMA czyli $\text{wartość\_parametru} = \frac{cena_{teraz}}{SMA_i(t)}$. Czas zamknięcia pozycji ustawiona będzie na stałe 14 dni.
+
+Otwieranie pozycji odbywa się, gdy $\text{wartość\_parametru} > \text{entry\_short}$ dla krótkiej pozycji, oraz $\text{wartość\_parametru} < \text{entry\_long}$ dla długiej.
+
+#### Algorytm kombinacji parametrów
+
+Analiza SMA o wyznaczonych paramterach jest mało efektywna. Ilość potencjalnie efektywnych parametrów jest za duża, aby szukać ich ręcznie. Dobrym rozwiązaniem jest użycie algorytmu, który testuje kombinacje parametrów, co pewien skok, tworząc bazę danych wszystkich "kombinacji". Posłużymy się taką bazą mojego autorstwa, wygenerowaną w oparciu o dane historyczne pary BTCUSD o długości prawie 10 lat od września 2014 do sierpnia 2024. W bazie są dodatkowe parametry:
+
+-   **i** - parametryzujemy okno SMA
+-   **multiple_entries** - raczej pominiemy ze względu na abstrakcyjność działania (zakłada możliwość wchodzenia w pozycje wielokrotnie, co zakłada nieskończoność dźwignii finansowej - możemy kupić nieograniczoną ilość aktywów)
+-   **capital_percent** - ilość kapitału wchodząca w pozycje (Procentowo)
+
+oraz zmienne wynikowe:
+
+-   **total_short_return** - suma zwrotów z pozycji short (mało przydatne)
+-   **total_long_return** - suma zwrotów z pozycji long (mało przydatne)
+-   **total_return** - suma dwóch poprzednich
+-   **positions** - ilość pozycji przydatna do oceny skali zabrania prowizji przez brokera oraz spreadu (Spread to różnica pomiędzy ceną zakupu a sprzedaży instrumentu na giełdzie).
+-   **balance** - saldo końcowe (na początku równe 1 - wartość końcowa oznacza jak zwielokrotniono majątek)
+-   **ROI** - roczna stopa zwrotu
+
+Przejdziemy do analizy wyników z bazy danych o ponad 130 tysiącach różnych kombinacji.
+
+##### Zakres parametrów
+
+Poniżej przedstawiono zakresy użytych parametrów algorytmu:
+
+$$ i \in \{3, 4, 5, 6\} $$
+
+$$ \text{entry\_short} \in [1.00, 1.05], \text{ krok: } 0.01 $$
+
+$$ \text{entry\_long} \in [0.95, 0.99], \text{ krok: } 0.01 $$
+
+$$ \text{exit\_short\_threshold} \in [0.95, 0.99], \text{ krok: } 0.01 $$
+
+$$ \text{exit\_long\_threshold} \in [\text{entry\_long}, 1.05], \text{ krok: } 0.01 $$
+
+$$ \text{capital\_percent} \in [0.1, 0.9], \text{ krok: } 0.1 $$
+
+$$ \text{position\_timeout} = 14 \text{ dni} $$
+
+Ze względu na moce obliczeniowe, parametry zostały tak ograniczone, jednak ciekawe byłoby ustawienie entry_short też na wartości mniejsze od SMA (potocznie mówiąc shortowanie podczas spadku), co znaczyło by przewidywanie dalszego trendu spadkowego, oraz entry_long na wartości na wartości większe od 1 (wchodzenie w longi podczas wzrostu), czyli kontynuowanie trendu wzrostowego.
+
+#### Rozkład wydajności sygnałów
+
+Domyślnie używamy danych o paramaterze $\text{multiple\_entries} = FALSE$ czyli ignorujemy dane zakładające nieograniczone zasoby konta.
+
+```{r}
+#| echo: false
+
+library(ggplot2)
+library(dplyr)
+library(plotly)
+
+# Liczone za pomocą SMA_algorithm.py na danych z pary BTCUSD w okresie od 2014-09-17 do 2024-08-15, czyli 9.9110198494 lat
+data <- read.csv("SMA_algorithm_performance_BTCUSD_1d_ALL.csv", stringsAsFactors = FALSE)
+
+data <- data %>%
+  mutate(
+    i = as.numeric(i),
+    entry_short = as.numeric(entry_short),
+    entry_long = as.numeric(entry_long),
+    exit_short_threshold = as.numeric(exit_short_threshold),
+    exit_long_threshold = as.numeric(exit_long_threshold),
+    position_timeout = as.character(position_timeout),
+    multiple_entries = as.logical(multiple_entries),
+    capital_percent = as.numeric(capital_percent),
+    total_short_return = as.numeric(total_short_return),
+    total_long_return = as.numeric(total_long_return),
+    total_return = as.numeric(total_return),
+    positions = as.integer(positions),
+    balance = ifelse(balance <= 0, 0, as.numeric(balance)),
+    roi = ifelse(balance > 0, ((balance^(1 / 9.9110198494)) - 1) * 100, -100.0)   
+  )
+
+# Surowa postać zawiera roi = 0 w przypadku balance = 0, ponieważ zakłada likwidacje przy ujemnym saldzie. Nie byłem pewny na jakim przedziale odbywała się egzekucja algorytmu, ale z roi dodatnich oraz balansu dało się wyliczyć dokładną długość danych historycznych. czyli ze wzoru t = ln(balance)/(1 + roi). Potwierdziło się to z danymi historycznymi które znajdowały się w tym samym folderze.
+# Mówiąc o roi mam na myśli roczną stopę zwrotu.
+
+
+data <- data %>%
+  filter(multiple_entries == FALSE)
+
+top_n_data <- data %>%
+  group_by(i) %>%
+  arrange(desc(roi)) %>%
+  slice(1:10) %>%
+  mutate(rank = row_number()) %>%
+  ungroup()
+
+heatmap <- ggplot(top_n_data, aes(x = factor(i), y = rank, fill = roi, text = paste(
+  "i:", i,
+  "<br>Ranking:", rank,
+  "<br>ROI:", roi,
+  "<br>Wejście Short:", entry_short,
+  "<br>Wejście Long:", entry_long,
+  "<br>Wyjście Short:", exit_short_threshold,
+  "<br>Wyjście Long:", exit_long_threshold,
+  "<br>Zwrot Long:", total_long_return,
+  "<br>Zwrot Short:", total_short_return,
+  "<br>Procent kapitału:", capital_percent,
+  "<br>Saldo:", balance,
+  "<br>Pozycje:", positions
+))) +
+  geom_tile() +
+  scale_fill_gradientn(
+    colors = c("blue", "cyan", "green", "yellow", "orange", "red"),
+    breaks = seq(min(top_n_data$roi, na.rm = TRUE), max(top_n_data$roi, na.rm = TRUE), length.out = 6),
+    name = "ROI (%)"
+  ) +
+  scale_y_reverse(breaks = 1:10) +
+  labs(
+    title = "Ranking 10 największych ROI po rozmiarze okna SMA",
+    x = "SMA (i)",
+    y = "Ranking"
+  ) +
+  theme_minimal()
+
+interactive_heatmap <- ggplotly(heatmap, tooltip = "text")
+
+interactive_heatmap
+```
+
+Jak widać, najlepiej radzi sobie algorytm używający $SMA_3$. Wydajność maleje wraz ze wzrostem okna $i$, co jest ciekawą informacją z niepewną interpretacją. Zwracając uwagę na najbardziej efektywny algorytm można spojrzeć, źe parametry są dosyć wyjątkowe. Wejście w pozycje long odbywa się, gdy cena jest taka jak średnia, lub niższa. Sygnałów long jest bardzo dużo. Otwarcia pozycji short są rzadkie, ponieważ cena musi być wyższa o 5% w stosunku do trzy dniowej średniej, w której jest wliczona obecna cena. Tu warto wspomnieć, że interpretacja wzrostu o 5% w ciągu ostatniego dnia, jest błędna na ogół. Zakładając dla $SMA_3$ kolejne wartości cenowe ciągu:
+
+$$a_n = x,\ a_{n-1} = 1000,\ a_{n-2} = 1000$$ oraz $$\text{wartość\_parametru} = 1.05$$  podstawiając do równania $SMA_3$ okazuje się, że $$x \approx 1077$$ co przekłada się na prawie **8%** dzienny wzrost. Spowodowane jest to oczywiście wpływem $a_n$ na wartość $SMA$. Taki spadek, lub dwa dni spadkowe pod rząd, występują rzadziej co przekłada się na mniej sygnałów. Wydajność akurat przy tych parametrach pozycji short jest to dosyć zrozumiała, kiedy spojrzymy na to iż nie ma ani jednej kombinacji parametrów, w której **total_short_return** jest dodatni, co jest z resztą zadziwiajace, że przy tylu iteracjach nie znalazła się nawet jedna. Wszystko to się zgadza również z faktem, że bitcoin wykazuje lepsze tempo wzrostu od SP&500, a tego logarytmując w poprzednim sygnale, ukazujemy jako funkcję wykładniczą. To jednak nie usprawiedliwia algorytmu, i należy stwierdzić, że oferuje on słabe sygnały krótkie.
+
+#### Najmniej wydajne sygnały
+
+Pokazanie najmniej wydajnych sygnałów jest możliwe jedynie przez ujawnienie całego rozkładu, ponieważ jest na poziomie doprowadzającym saldo do 0 w dużej ilości przypadków.
+
+```{r}
+#| echo: false
+
+top_n_data <- data %>%
+  group_by(i) %>%
+  arrange(desc(roi)) %>%
+  mutate(rank = row_number()) %>%
+  ungroup()
+
+heatmap <- ggplot(top_n_data, aes(x = factor(i), y = rank, fill = roi, text = paste(
+  "i:", i,
+  "<br>Ranking:", rank,
+  "<br>ROI:", roi,
+  "<br>Wejście Short:", entry_short,
+  "<br>Wejście Long:", entry_long,
+  "<br>Wyjście Short:", exit_short_threshold,
+  "<br>Wyjście Long:", exit_long_threshold,
+  "<br>Procent kapitału:", capital_percent,
+  "<br>Saldo:", balance,
+  "<br>Pozycje:", positions
+))) +
+  geom_tile() +
+  scale_fill_gradientn(
+    colors = c("blue", "cyan", "green", "yellow", "orange", "red"),
+    breaks = seq(min(top_n_data$roi, na.rm = TRUE), max(top_n_data$roi, na.rm = TRUE), length.out = 6),
+    name = "ROI (%)"
+  ) +
+  scale_y_reverse(breaks = 1:10) +
+  labs(
+    title = "Ranking największych ROI po rozmiarze okna SMA",
+    x = "SMA (i)",
+    y = "Ranking"
+  ) +
+  theme_minimal()
+
+interactive_heatmap <- ggplotly(heatmap, tooltip = "text")
+
+interactive_heatmap
+
+```
+
+Powodem dla którego na rozkładzie widać granice oddzielenia niebieskiego pola, jest sposób wykonywania operacji zmiennoprzecinkowych. Pomimo poprawnych matematycznie obliczeń, saldo potrafi wyjść ujemne, bardzo bliskie zeru, co uniemożliwa obliczenia ROI za pomocą pierwiastkowania. Wtedy saldo przyjmujemy jako 0, a ROI jako -100%.
+
+```{r}
+#| echo: false
+
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+top_n_data <- data %>%
+  group_by(i) %>%
+  arrange(desc(roi)) %>%
+  mutate(rank = row_number()) %>%
+  ungroup()
+
+ggplot(data, aes(x = roi, y = ..count.., fill = ..x..)) +
+  geom_histogram(bins = 50, alpha = 0.7) +
+  scale_fill_gradientn(
+    colors = c("blue", "cyan", "green", "yellow", "orange", "red"),
+    breaks = seq(min(data$roi, na.rm = TRUE), max(data$roi, na.rm = TRUE), length.out = 6),
+    name = "ROI (%)"
+  ) +
+  labs(
+    title = "Rozkład ROI",
+    x = "ROI (%)",
+    y = "Częstotliwość"
+  ) +
+  theme_minimal()
+```
+
+Mało konkretnych wniosków da się wysunąć z tych wykresów, chociaż dają nam spojrzenie na ogólną wydajność różnych $i$ za pomocą mapy cieplnej, oraz na wydajność ogólną algorytmu za pomocą rozkładu ROI. Jest ona dosyć kiepska.
+
+#### Strategie pozycji
+
+```{r}
+#| echo: false
+
+ggplot(data, aes(x = capital_percent, y = roi)) +
+  geom_point(alpha = 0.5, color = "purple") +
+  labs(title = "ROI vs. Procent kapitału",
+       x = "Procent kapitału",
+       y = "ROI (%)") +
+  theme_minimal()
+
+
+```
+
+Na początek spójrzmy na wydajność algorytmu, względem procentu kapitału w pozycji. Nie ma tu zaskoczenia. Czym więcej środków, tym większy poziom ryzyka. W przypadku dobrych parametrów sygnału, opłaca się otwierać większe pozycje. Przyda nam się pamiętać to przy następnych wykresach.
+
+```{r}
+#| echo: false
+plot_ly(data, x = ~entry_short, y = ~exit_short_threshold, z = ~total_short_return,
+        type = 'scatter3d', mode = 'markers',
+        marker = list(size = 5, color = ~roi, colorscale = 'Viridis')) %>%
+  layout(
+    scene = list(
+      xaxis = list(title = "Wejście w pozycje short"),
+      yaxis = list(title = "Wyjście z pozycji short"),
+      zaxis = list(title = "Suma rentowności pozycji short (total_short_return)"),
+      camera = list(
+        eye = list(x = -2.0, y = -1.3, z = 0.3)
+      )
+    ),
+    title = "Wykres zależności strategi pozycji short, do jej wyników"
+  )
+
+plot_ly(data, x = ~entry_long, y = ~exit_long_threshold, z = ~total_long_return,
+        type = 'scatter3d', mode = 'markers',
+        marker = list(size = 5, color = ~roi, colorscale = 'Viridis')) %>%
+  layout(
+    scene = list(
+      xaxis = list(title = "Wejście w pozycje long"),
+      yaxis = list(title = "Wyjście z pozycji long"),
+      zaxis = list(title = "Suma rentowności pozycji long (total_long_return)"),
+      camera = list(
+        eye = list(x = -2.0, y = -1.3, z = 0.3)
+      )
+    ),
+    title = "Wykres zależności strategi pozycji long, do jej wyników"
+  )
+
+```
+
+Sygnał pozycji short, oraz pozycji long znacząco różnią się od siebie. Pierwsze co się wyróżnia, to że skala ma zupełnie inne wartości. Shorty - tylko ujemne, a longi tylko dodatnie. Dodatkowo wykres pozycji długich jest wyższy, oraz ma tendencję wzrostową przy wyjściu z pozycji równym $1.05$. Wykres pozycji krótkich jest jak lekko pochylona płaszczyzna. Na obu wykresach, dla jednej kombinacji parametrów pozycji short znajduje się kilka punktów, ponieważ są to wartości dla różnych *capital_percent*. Z wykresów widać, że algorytm preferuje najmniej wejść w pozycje short, bo przynoszą straty, oraz jak najwięcej wejść w pozycje long, ponieważ przynoszą zyski. To samo działa odnośnie wyjścia z pozycji - algorytm chce wyjść jak najszybciej z pozycji short i trzymać jak najdłużej pozycje long. 
+
+#### Podsumowanie
+
+Wyniki są bardzo ciekawe, chociaż sygnały nie dają dużego zwrotu w rzeczywistości, pomimo że pokazuje to najwydajniejsza pozycja (38% roczny wzrost). Zyski zjada prowizja brokera i spread ceny. Kolejnym aspektem jest, że algorytm po prostu zawsze kupował poniżej średniej i trzymał jak najdłużej. Cały trud mógł zrobić wykładniczy wzrost ceny bitcoina (W tym okresie wzrósł z $388,2$ do $59000$ USD, co daje wydajność na poziomie **66% ROI**). Kierowanie się pojedyńczym SMA jak widać nie jest efeketywnym sygnałem rynkowym. Nie jest w stanie być lepszym algorytmem niż kupno i trzymanie przez cały ten okres. Wszystko to daje podstawy do odrzucenia drugiej hipotezy. Kolejnymi krokami rozwijania koncepcji opartej o SMA, może być zwiększenie ilości iterowanych parametrów, zmiana długości zbioru danych na dłuższy, podział takiego zbioru na części i sprawdzanie poszczególnych wydajności (np. w bull market lub bear market), oraz zwiększenie ilości SMA, do np. kilku co diametralnie zwiększyło by skomplikowanie algorytmu.
+
+## Mowa końcowa
+
+Odrzucamy obie hipotezy. Najprostsze sygnały rynkowe nie są pomocne do oceny stanu rynku - ani makroekonomiczne ani techniczne. Giełda to gra konkurencjyna, w której znalezienie dobrego prostego sygnału, spotka się od razu z otwarciem pozycji przez graczy, i w konsekwencji zmiany ceny, co czyni sygnał niedziałającym. Omawiane sygnały wymagają dalszej, o wiele głębszej analizy, aby dojść do sygnałów rentownych. Jednak wierzę, że tak prosta i podstawowa analiza jest w stanie otworzyć umysły na nieszablonowe myślenie oraz tworzyć pomysły na trudniejsze analizy. Uchroni także przed wierzeniem w pozornie działające sygnały pokazywane w internecie, gdzie autorzy zapewniają o dużych zyskach w krótkim czasie. Ważnym jest aby nie tylko zarobić, ale też nie stracić.

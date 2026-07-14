@@ -23,10 +23,24 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Deploy przez rsync
+      # Whitelist rozszerzeń: na serwer trafiają WYŁĄCZNIE pliki będące stroną.
+      # Źródła (.qmd, .md, .R, .m, .csv, .py, .ipynb, .zip, .RData ...) zostają
+      # tylko w repo. Brak --delete: pliki spoza repo na VPS (np. eye-tracking)
+      # pozostają nietknięte.
+      - name: Deploy przez rsync (whitelist rozszerzeń)
         run: |
           rsync -rlvz --omit-dir-times --no-perms \
-            --exclude '.git' \
-            --exclude '.github' \
+            --exclude '.git' --exclude '.git/**' \
+            --exclude '.github' --exclude '.github/**' \
+            --include '*/' \
+            --include '*.html' --include '*.htm' \
+            --include '*.css' --include '*.js' --include '*.mjs' --include '*.map' \
+            --include '*.json' \
+            --include '*.png' --include '*.jpg' --include '*.jpeg' --include '*.gif' \
+            --include '*.svg' --include '*.webp' --include '*.ico' --include '*.avif' \
+            --include '*.mp4' --include '*.webm' --include '*.ogg' \
+            --include '*.woff' --include '*.woff2' --include '*.ttf' --include '*.otf' --include '*.eot' \
+            --include '*.pdf' \
+            --exclude '*' \
             -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes" \
             ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/main/public/"

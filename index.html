@@ -1,180 +1,671 @@
 <!DOCTYPE html>
-<html lang="pl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jakub Tatarkiewicz - Strona główna</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<html lang="pl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jakub Tatarkiewicz - AI Automation / Data Science</title>
+  <meta name="description" content="Jakub Tatarkiewicz - AI Developer. Automatyzacje LLM, integracje API, RAG, NLP i analiza danych.">
+  <meta name="theme-color" content="#0b1220">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;750;800&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary-color: #FF4E50;
-      --secondary-color: #1C92D2;
-      --accent-color: #F9D423;
-      --bg-gradient: linear-gradient(60deg, #abecd6 0%, #fbed96 100%);
-      --card-bg: #ffffff;
-      --text-color: #2d3436;
+      --ink: #eef4f8;
+      --ink-soft: rgba(238, 244, 248, 0.72);
+      --accent: #e2b25f;
+      --accent-bright: #f0c87e;
+      --accent-ink: #241a06;
+      --glass: rgba(10, 18, 28, 0.52);
+      --glass-line: rgba(238, 244, 248, 0.16);
     }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: 'Inter', sans-serif;
-      color: var(--text-color);
-      background: var(--bg-gradient);
-      background-size: 200% 200%;
-      animation: gradientShift 10s ease infinite;
+      margin: 0;
       min-height: 100vh;
+      color: var(--ink);
+      background: #0b1220;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    p, h1, h2 { margin: 0; }
+    img { display: block; max-width: 100%; }
+
+    /* --- Przełącznik języka --- */
+    .lang-toggle {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 2;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid var(--glass-line);
+      border-radius: 999px;
+      background: rgba(10, 18, 28, 0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+
+    .lang-toggle button {
+      min-width: 40px;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--ink-soft);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease;
     }
-    .container {
-      max-width: 900px;
-      width: 100%;
-      background: rgba(255,255,255,0.85);
-      border-radius: 20px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-      backdrop-filter: blur(8px);
-      padding: 3rem;
-      transform: translateY(20px);
-      opacity: 0;
-      animation: fadeInUp 0.8s ease-out 0.2s forwards;
+
+    .lang-toggle button:hover { color: var(--ink); }
+
+    .lang-toggle button.is-active {
+      color: var(--accent-ink);
+      background: var(--accent);
     }
-    @keyframes fadeInUp {
-      to { transform: translateY(0); opacity: 1; }
-    }
-    h1 {
-      font-size: 2.75rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 2rem;
-      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: textReveal 1s ease-out 0.5s forwards;
-      opacity: 0;
-    }
-    @keyframes textReveal {
-      to { opacity: 1; }
-    }
-    section {
-      margin-top: 3rem;
-    }
-    h2 {
-      font-size: 1.85rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
+
+    /* --- Kopiowanie adresu e-mail (tooltip przy hover) --- */
+    .copy-email {
       position: relative;
-      display: inline-block;
-      color: var(--secondary-color);
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
     }
-    h2::after {
-      content: '';
+
+    .copy-email:hover { color: var(--accent); }
+
+    .copy-email::after {
+      content: attr(data-tip);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 8px);
+      transform: translateX(-50%);
+      padding: 5px 10px;
+      border: 1px solid var(--glass-line);
+      border-radius: 6px;
+      background: rgba(10, 18, 28, 0.92);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 160ms ease;
+    }
+
+    .copy-email:hover::after,
+    .copy-email:focus-visible::after {
+      opacity: 1;
+    }
+
+    /* --- Wideo w tle --- */
+    .video-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .video-bg video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* blur + lekki scale, żeby rozmyte krawędzie nie odsłaniały tła */
+      filter: blur(10px) saturate(1.15) brightness(0.6);
+      transform: scale(1.08);
+    }
+
+    .video-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(11, 18, 32, 0.2) 0%, rgba(11, 18, 32, 0.6) 100%),
+        linear-gradient(180deg, rgba(11, 18, 32, 0.4) 0%, rgba(11, 18, 32, 0.25) 45%, rgba(11, 18, 32, 0.7) 100%);
+    }
+
+    /* --- Ekran startowy: samo imię i nazwisko --- */
+    .intro {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .intro .eyebrow { margin-bottom: 14px; }
+
+    .intro h1 {
+      font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+      font-size: clamp(46px, 9.5vw, 104px);
+      font-weight: 500;
+      line-height: 1.06;
+      letter-spacing: 0.01em;
+      text-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 34px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .scroll-hint svg {
+      width: 22px;
+      height: 22px;
+      animation: bob 1.8s ease-in-out infinite;
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(7px); }
+    }
+
+    /* --- Sekcja z wizytówką --- */
+    .page {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 96px;
+      justify-items: center;
+      align-content: center;
+      min-height: 100vh;
+      padding: 96px 20px;
+    }
+
+    /* Wariant otwarty: bez szklanych kart, treść wprost na wideo. */
+    .card {
+      width: min(680px, 100%);
+    }
+
+    .card h2,
+    .lead,
+    .timeline-body,
+    .contact,
+    .eyebrow {
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6);
+    }
+
+    .card-top { margin-bottom: 26px; }
+
+    .eyebrow {
+      margin-bottom: 6px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .card h2 {
+      font-size: clamp(28px, 5vw, 38px);
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+    }
+
+    .lead {
+      color: var(--ink-soft);
+      font-size: 17px;
+    }
+
+    /* Wariant typograficzny: tagi jako linia tekstu ze złotymi separatorami. */
+    .tags {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: baseline;
+      column-gap: clamp(8px, 1.6vw, 14px);
+      margin: 26px 0 34px;
+      padding: 0;
+      list-style: none;
+      color: var(--ink-soft);
+      font-size: clamp(10.5px, 1.9vw, 14px);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+    }
+
+    .tags li { white-space: nowrap; }
+
+    .tags li + li::before {
+      content: "\00B7";
+      margin-right: 14px;
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: 34px;
+      row-gap: 14px;
+    }
+
+    /* Akcje jako linki tekstowe z animowanym podkreśleniem. */
+    .button {
+      position: relative;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 8px 0;
+      font-weight: 750;
+      font-size: 16px;
+      letter-spacing: 0.01em;
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+    }
+
+    .button::after {
+      content: "";
       position: absolute;
       left: 0;
-      bottom: -5px;
-      width: 50%;
-      height: 4px;
-      background: var(--accent-color);
-      animation: underlineGrow 0.7s ease-out forwards;
-      transform-origin: left;
+      right: 0;
+      bottom: 2px;
+      height: 2px;
+      background: currentColor;
       transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 220ms ease;
     }
-    @keyframes underlineGrow {
-      to { transform: scaleX(1); }
+
+    .button:hover::after,
+    .button:focus-visible::after {
+      transform: scaleX(1);
     }
-    .grid {
+
+    .button .arrow {
+      transition: transform 200ms ease;
+    }
+
+    .button:hover .arrow { transform: translateX(4px); }
+
+    .button-primary { color: var(--accent); }
+
+    .button-primary::after { transform: scaleX(1); }
+
+    .button-primary:hover { color: var(--accent-bright); }
+
+    .button-primary:hover .arrow { transform: translateX(6px); }
+
+    .button-secondary { color: var(--ink); }
+
+    .button-secondary:hover { color: var(--accent-bright); }
+
+    .button-secondary .arrow {
+      font-size: 14px;
+    }
+
+    .button .brand {
+      width: 17px;
+      height: 17px;
+      align-self: center;
+    }
+
+    /* --- Oś czasu --- */
+    .timeline {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 2rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
     }
-    .card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 1.5rem 2rem;
-      text-align: center;
-      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-      transform: translateY(20px);
-      opacity: 0;
+
+    .timeline-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr);
+      gap: 18px;
+      padding-bottom: 30px;
     }
-    .card:nth-child(1) { animation: fadeInUp 0.6s ease-out 0.7s forwards; }
-    .card:nth-child(2) { animation: fadeInUp 0.6s ease-out 0.9s forwards; }
-    .card:nth-child(3) { animation: fadeInUp 0.6s ease-out 1.1s forwards; }
-    .card:nth-child(4) { animation: fadeInUp 0.6s ease-out 1.3s forwards; }
-    .card:nth-child(5) { animation: fadeInUp 0.6s ease-out 1.5s forwards; }
-    .card:hover {
-      transform: translateY(-8px) rotate(-1deg);
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+
+    .timeline-item:last-child { padding-bottom: 0; }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      top: 56px;
+      bottom: 4px;
+      left: 25px;
+      width: 2px;
+      background: var(--glass-line);
     }
-    .card h3 {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: var(--primary-color);
-      transition: color 0.3s ease;
+
+    .timeline-item:last-child::before { display: none; }
+
+    .timeline-logo {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid var(--glass-line);
+      background: #fff;
     }
-    .card:hover h3 {
-      color: var(--secondary-color);
+
+    .timeline-date {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: 0.04em;
     }
-    .card a {
-      display: inline-block;
-      margin-top: 0.75rem;
-      font-weight: 600;
-      color: var(--accent-color);
-      padding: 0.5rem 1.25rem;
-      border: 2px solid var(--accent-color);
-      border-radius: 30px;
-      text-decoration: none;
-      transition: background 0.3s ease, color 0.3s ease;
+
+    .timeline-body h3 {
+      margin: 2px 0 6px;
+      font-size: 19px;
+      line-height: 1.3;
     }
-    .card a:hover {
-      background: var(--accent-color);
-      color: #ffffff;
+
+    .timeline-body h3 a:hover { color: var(--accent); }
+
+    .timeline-body p {
+      color: var(--ink-soft);
+      font-size: 15px;
+    }
+
+    .contact {
+      display: grid;
+      gap: 10px;
+      margin: 30px 0 0;
+      padding: 24px 0 0;
+      border-top: 1px solid var(--glass-line);
+      color: var(--ink-soft);
+      font-size: 15px;
+      list-style: none;
+    }
+
+    .contact li {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .contact img, .contact .ico {
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+    }
+    .contact img { filter: invert(1); }
+
+    .contact a:hover { color: var(--accent); }
+
+    @media (max-width: 560px) {
+      .card { padding: 30px 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .video-bg video { display: none; }
+      .scroll-hint svg { animation: none; }
+      body {
+        background:
+          radial-gradient(ellipse at 30% 20%, #16324a 0%, #0b1220 70%);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Jakub Tatarkiewicz</h1>
-    <section>
-      <h2>CV</h2>
-      <div class="grid">
-        <div class="card">
-          <h3>CV (polski)</h3>
-          <a href="/Work/CV%20%E2%80%93%20Jakub%20Tatarkiewicz.pdf" target="_blank">Pobierz PDF</a>
-        </div>
-        <div class="card">
-          <h3>Resume (angielski)</h3>
-          <a href="/Work/Resume%20%E2%80%93%20Jakub%20Tatarkiewicz.pdf" target="_blank">Pobierz PDF</a>
-        </div>
-        <div class="card">
-          <h3>Profil GitHub</h3>
-          <a href="https://github.com/jakubtatarkiewicz" target="_blank">Odwiedź GitHub</a>
-        </div>
-      </div>
-    </section>
-    <section>
-      <h2>Analizy</h2>
-      <div class="grid">
-        <div class="card">
-          <h3>Analiza sygnałów rynkowych</h3>
-          <a href="/Analiza-sygnalow-rynkowych">Zobacz analizę</a>
-        </div>
-        <div class="card">
-          <h3>Porównanie metod iteracyjnych</h3>
-          <a href="/Porownanie-metod-iteracyjnych">Zobacz analizę</a>
-        </div>
-      </div>
-    </section>
+  <div class="lang-toggle" role="group" aria-label="Język strony / Site language">
+    <button type="button" data-lang="pl" class="is-active">PL</button>
+    <button type="button" data-lang="en">EN</button>
   </div>
-</body>
-</html>
+
+  <div class="video-bg" aria-hidden="true">
+    <!-- Wersja ping-pong: przód + tył sklejone w jednym pliku, loop gra bez skoku do początku. -->
+    <video autoplay="" muted="" loop="" playsinline="" preload="auto" src="assets/davinci_pingpong.mp4"></video>
+  </div>
+
+  <header class="intro" id="start">
+    <div>
+      <p class="eyebrow">AI Automation / Data Science</p>
+      <h1>Jakub Tatarkiewicz</h1>
+    </div>
+    <div class="scroll-hint" aria-hidden="true">
+      <span data-i18n="scrollHint">Zobacz więcej</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9l6 6 6-6"></path>
+      </svg>
+    </div>
+  </header>
+
+  <main class="page" id="wizytowka">
+    <section class="card" aria-label="Wizytówka Jakuba Tatarkiewicza">
+      <div class="card-top">
+        <p class="eyebrow">AI Developer</p>
+        <h2 data-i18n="aboutTitle">O mnie</h2>
+      </div>
+
+      <p class="lead" data-i18n="aboutLead">Tworzę rozwiązania łączące modele językowe, integracje API, dane i logikę biznesową. AI, które realnie przyspiesza pracę z danymi, powtarzalnymi zadaniami i procesami operacyjnymi.</p>
+
+      <ul class="tags" aria-label="Specjalizacje">
+        <li>LLM &amp; RAG</li>
+        <li data-i18n="tagApi">Integracje API</li>
+        <li>NLP</li>
+        <li>Data Science</li>
+        <li data-i18n="tagAuto">Software development</li>
+      </ul>
+
+      <div class="actions">
+        <a class="button button-primary" id="mail-button" href="mailto:jakubtatarkiewicz@gmail.com?subject=Kontakt%20ze%20strony%20jakubtatarkiewicz.com">
+          <span data-i18n="btnMessage">Napisz wiadomość</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="button button-secondary" href="https://github.com/jakubtatarkiewicz" target="_blank" rel="noreferrer">
+          <svg class="brand" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.26.82-.577 0-.285-.01-1.04-.016-2.04-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.09-.745.083-.73.083-.73 1.205.086 1.84 1.237 1.84 1.237 1.07 1.835 2.807 1.305 3.492.997.108-.776.42-1.305.763-1.605-2.665-.303-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.235-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3.003-.404c1.02.005 2.047.138 3.006.404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.873.12 3.176.77.84 1.233 1.91 1.233 3.22 0 4.61-2.805 5.624-5.478 5.92.43.372.814 1.102.814 2.222 0 1.606-.015 2.898-.015 3.293 0 .32.216.694.825.576C20.565 22.296 24 17.797 24 12.5 24 5.87 18.627.5 12 .5Z"></path></svg>
+          GitHub
+          <span class="arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="button button-secondary" href="https://www.linkedin.com/in/jakub-tatarkiewicz-992988231" target="_blank" rel="noreferrer">
+          <svg class="brand" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"></path></svg>
+          LinkedIn
+          <span class="arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+
+      <ul class="contact" aria-label="Dane kontaktowe">
+        <li>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
+          <button type="button" class="copy-email" id="copy-email" data-tip="Kliknij, aby skopiować">jakubtatarkiewicz@gmail.com</button>
+        </li>
+        <li>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span data-i18n="locText">Lublin / Warszawa</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card" aria-label="Oś czasu zatrudnienia i edukacji">
+      <div class="card-top">
+        <p class="eyebrow" data-i18n="tlEyebrow">Oś czasu</p>
+        <h2 data-i18n="tlTitle">Doświadczenie</h2>
+      </div>
+
+      <ul class="timeline">
+        <li class="timeline-item">
+          <img class="timeline-logo" src="assets/automee.jpeg" alt="Logo autoMEE">
+          <div class="timeline-body">
+            <p class="timeline-date" data-i18n="t1date">28.07.2025 - obecnie</p>
+            <h3>
+              <a href="https://www.linkedin.com/company/automee-ai/" target="_blank" rel="noreferrer">
+                AI Developer, autoMEE Sp. z o.o.
+              </a>
+            </h3>
+            <p data-i18n="t1desc">Projektuję i wdrażam rozwiązania oparte na dużych modelach językowych oraz integracje API automatyzujące obieg dokumentów, faktur i procesy dekretacji. Odpowiadam za pełny cykl rozwoju oprogramowania, ze szczególnym naciskiem na niezawodne przetwarzanie ustrukturyzowanych danych.</p>
+          </div>
+        </li>
+
+        <li class="timeline-item">
+          <img class="timeline-logo" src="assets/question_mark.png" alt="">
+          <div class="timeline-body">
+            <p class="timeline-date">01.09.2024 - 28.02.2025</p>
+            <h3>Advanced Machine Learning</h3>
+            <p data-i18n="t2desc">Przygotowanie danych, selekcja cech, testy statystyczne, detekcja anomalii, modele regresyjne i klasyfikacyjne, transformery i RAG.</p>
+          </div>
+        </li>
+
+        <li class="timeline-item">
+          <img class="timeline-logo" src="assets/politechnika_lubelska.jpeg" alt="Logo Politechniki Lubelskiej">
+          <div class="timeline-body">
+            <p class="timeline-date" data-i18n="t3date">2023 - obecnie</p>
+            <h3>
+              <a href="https://www.linkedin.com/school/politechnikalubelska" target="_blank" rel="noreferrer" data-i18n="t3name">Politechnika Lubelska</a>
+            </h3>
+            <p data-i18n="t3desc">Inżynieria i Analiza Danych, studia I stopnia. Programowanie, statystyka, uczenie maszynowe, bazy danych i analiza danych.</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    // Spowolnienie filmiku 1,5x; atrybut loop zapętla go bez przerwy.
+    const video = document.querySelector(".video-bg video");
+    const SLOW_RATE = 1 / 1.5;
+
+    function slowDown() {
+      video.playbackRate = SLOW_RATE;
+    }
+
+    slowDown();
+    video.addEventListener("loadedmetadata", slowDown);
+    video.addEventListener("play", slowDown);
+
+    // Autoplay bywa blokowany do pierwszej interakcji - wtedy dogrywamy ręcznie.
+    video.play().catch(() => {
+      document.addEventListener("pointerdown", () => video.play(), { once: true });
+    });
+
+    // Kliknięcie gdziekolwiek na ekranie startowym przewija do wizytówki.
+    document.getElementById("start").addEventListener("click", () => {
+      document.getElementById("wizytowka").scrollIntoView({ behavior: "smooth" });
+    });
+
+    // --- Wersje językowe ---
+    const I18N = {
+      pl: {
+        title: "Jakub Tatarkiewicz - AI Automation / Data Science",
+        metaDesc: "Jakub Tatarkiewicz - AI Developer. Automatyzacje LLM, integracje API, RAG, NLP i analiza danych.",
+        scrollHint: "Zobacz więcej",
+        aboutTitle: "O mnie",
+        aboutLead: "Tworzę rozwiązania łączące modele językowe, integracje API, dane i logikę biznesową. AI, które realnie przyspiesza pracę z danymi, powtarzalnymi zadaniami i procesami operacyjnymi.",
+        tagApi: "Integracje API",
+        tagAuto: "Software development",
+        btnMessage: "Napisz wiadomość",
+        locText: "Lublin / Warszawa",
+        tlEyebrow: "Oś czasu",
+        tlTitle: "Doświadczenie",
+        t1date: "28.07.2025 - obecnie",
+        t1desc: "Projektuję i wdrażam rozwiązania oparte na dużych modelach językowych oraz integracje API automatyzujące obieg dokumentów, faktur i procesy dekretacji. Odpowiadam za pełny cykl rozwoju oprogramowania, ze szczególnym naciskiem na niezawodne przetwarzanie ustrukturyzowanych danych.",
+        t2desc: "Przygotowanie danych, selekcja cech, testy statystyczne, detekcja anomalii, modele regresyjne i klasyfikacyjne, transformery i RAG.",
+        t3date: "2023 - obecnie",
+        t3name: "Politechnika Lubelska",
+        t3desc: "Inżynieria i Analiza Danych, studia I stopnia. Programowanie, statystyka, uczenie maszynowe, bazy danych i analiza danych.",
+        mailSubject: "Kontakt ze strony jakubtatarkiewicz.com",
+        tipCopy: "Kliknij, aby skopiować",
+        tipCopied: "Skopiowano!",
+      },
+      en: {
+        title: "Jakub Tatarkiewicz - AI Automation / Data Science",
+        metaDesc: "Jakub Tatarkiewicz - AI Developer. LLM automations, API integrations, RAG, NLP and data analysis.",
+        scrollHint: "See more",
+        aboutTitle: "About me",
+        aboutLead: "I build solutions that combine language models, API integrations, data and business logic. AI that genuinely speeds up work with data, repetitive tasks and operational processes.",
+        tagApi: "API integrations",
+        tagAuto: "Software development",
+        btnMessage: "Send a message",
+        locText: "Lublin / Warsaw",
+        tlEyebrow: "Timeline",
+        tlTitle: "Experience",
+        t1date: "28.07.2025 - present",
+        t1desc: "I design and deliver large language model solutions and API integrations that automate document and invoice workflows and accounting processes. I own the full software development lifecycle, with a strong focus on reliable structured-data processing.",
+        t2desc: "Data preparation, feature selection, statistical testing, anomaly detection, regression and classification models, transformers and RAG.",
+        t3date: "2023 - present",
+        t3name: "Lublin University of Technology",
+        t3desc: "Data Engineering and Analysis, BSc studies. Programming, statistics, machine learning, databases and data analysis.",
+        mailSubject: "Contact from jakubtatarkiewicz.com",
+        tipCopy: "Click to copy",
+        tipCopied: "Copied!",
+      },
+    };
+
+    const MAIL = "jakubtatarkiewicz@gmail.com";
+    const mailButton = document.getElementById("mail-button");
+
+    // Adres w sekcji kontakt: klik kopiuje do schowka, tooltip potwierdza.
+    const copyEmail = document.getElementById("copy-email");
+    let tipTimer;
+
+    copyEmail.addEventListener("click", () => {
+      const t = I18N[document.documentElement.lang || "pl"];
+      const confirm = () => {
+        copyEmail.dataset.tip = t.tipCopied;
+        clearTimeout(tipTimer);
+        tipTimer = setTimeout(() => { copyEmail.dataset.tip = t.tipCopy; }, 1600);
+      };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(MAIL).then(confirm).catch(() => {});
+      }
+    });
+
+    // Domyślny język: zapamiętany wybór > domena .pl > ustawienia przeglądarki.
+    function detectLang() {
+      const saved = localStorage.getItem("lang");
+      if (saved === "pl" || saved === "en") return saved;
+      if (location.hostname.endsWith(".pl")) return "pl";
+      const langs = navigator.languages || [navigator.language || "en"];
+      return langs.some((l) => l.toLowerCase().startsWith("pl")) ? "pl" : "en";
+    }
+
+    function applyLang(lang) {
+      const t = I18N[lang];
+      document.documentElement.lang = lang;
+      document.title = t.title;
+      document.querySelector('meta[name="description"]').setAttribute("content", t.metaDesc);
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const value = t[el.dataset.i18n];
+        if (value) el.textContent = value;
+      });
+      document.querySelectorAll(".lang-toggle button").forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.lang === lang);
+      });
+      mailButton.href = "mailto:" + MAIL + "?subject=" + encodeURIComponent(t.mailSubject);
+      copyEmail.dataset.tip = t.tipCopy;
+    }
+
+    document.querySelectorAll(".lang-toggle button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        localStorage.setItem("lang", btn.dataset.lang);
+        applyLang(btn.dataset.lang);
+      });
+    });
+
+    applyLang(detectLang());
+  </script>
+
+
+</body></html>

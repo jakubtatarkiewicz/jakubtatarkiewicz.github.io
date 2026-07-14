@@ -1,0 +1,1 @@
+# [Otwórz analize](https://jakubtatarkiewicz.github.io/Analiza-sygnalow-rynkowych/)

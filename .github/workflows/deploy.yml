@@ -25,7 +25,7 @@ jobs:
 
       - name: Deploy przez rsync
         run: |
-          rsync -az \
+          rsync -rlvz --omit-dir-times --no-perms \
             --exclude '.git' \
             --exclude '.github' \
             -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes" \

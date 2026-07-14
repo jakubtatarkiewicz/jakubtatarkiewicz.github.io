@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Least privilege: workflow tylko czyta repo (deploy leci przez SSH, nie GITHUB_TOKEN).
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-vps
   cancel-in-progress: true
